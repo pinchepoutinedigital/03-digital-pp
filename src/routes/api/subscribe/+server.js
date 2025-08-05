@@ -51,16 +51,16 @@ export async function POST({ request, platform }) {
 			}, { status: 400 });
 		}
 
-		// Check if email already exists
+		// Check if email already exists for this specific type
 		const existingSubscriber = await platform.env.DB
-			.prepare('SELECT id, type FROM subscribers WHERE email = ? AND active = true')
-			.bind(email)
+			.prepare('SELECT id, type FROM subscribers WHERE email = ? AND type = ? AND active = true')
+			.bind(email, type)
 			.first();
 
 		if (existingSubscriber) {
 			return json({
 				success: false,
-				message: 'Email already subscribed to this list'
+				message: `Email already subscribed to ${type}`
 			}, { status: 409 });
 		}
 
