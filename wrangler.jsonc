@@ -28,6 +28,8 @@
                 "crons": [
                         "0 9 * * 1"
                 ]
+
+	}
         /**
          * Note: Set MAILGUN_API_KEY as a secret using:
          * wrangler secret put MAILGUN_API_KEY
