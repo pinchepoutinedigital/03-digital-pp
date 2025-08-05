@@ -13,7 +13,24 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"vars": {
+                "MAILGUN_DOMAIN": "your-domain.com"
+        },
+        "d1_databases": [
+                {
+                        "binding": "DB",
+                        "database_name": "subscribers-db",
+                        "database_id": "215a6b19-a550-4d91-acd9-dcf756dc9438"
+                }
+        ]
+        /**
+         * Note: Set MAILGUN_API_KEY as a secret using:
+         * wrangler secret put MAILGUN_API_KEY
+         */
+
+
+
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -22,7 +39,7 @@
 
 	/**
 	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
+	 * Bindings allow your Worker to interact with resources on the Cloudflare D,eveloper Platform, including
 	 * databases, object storage, AI inference, real-time communication and more.
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
