@@ -51,11 +51,16 @@ export async function POST({ request, platform }) {
 			}, { status: 400 });
 		}
 
+		// Debug: Check what exists in database
+		console.log(`Checking for existing subscription: email=${email}, type=${type}`);
+		
 		// Check if email already exists for this specific type
 		const existingSubscriber = await platform.env.DB
 			.prepare('SELECT id FROM subscribers WHERE email = ? AND type = ? AND active = true')
 			.bind(email, type)
 			.first();
+
+		console.log('Existing subscriber found:', existingSubscriber);
 
 		if (existingSubscriber) {
 			return json({
