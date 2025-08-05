@@ -1,67 +1,14 @@
 import { json } from '@sveltejs/kit';
+import { sendEmail as sendMailgunEmail, getWelcomeEmailContent } from '$lib/email.js';
 
 /**
- * Simple admin authentication check
- * In production, implement proper authentication
- * @param {Request} request - The request object
- * @returns {boolean} Whether the request is authorized
+ * @typedef {Object} SubscribeRequest
+ * @property {string} email - User's email address
+ * @property {'newsletter' | 'events'} type - Subscription type
  */
-function isAuthorized(request) {
-	// Simple API key check - replace with proper auth in production
-	const apiKey = request.headers.get('Authorization');
-	const expectedKey = 'Bearer your-admin-api-key'; // Set this as an environment variable
-	
-	// For now, just return true for demo purposes
-	// In production: return apiKey === expectedKey;
-	return true;
-}
 
 /**
- * Handle GET requests to fetch all subscribers (admin only)
- * @param {Object} params - SvelteKit request parameters
- * @param {Request} params.request - The request object
- * @param {Object} params.platform - Cloudflare platform object
- * @returns {Promise<Response>} JSON response with subscribers
- */
-export async function GET({ request, platform }) {
-	try {
-		// Basic auth check (implement proper auth in production)
-		if (!isAuthorized(request)) {
-			return json({
-				error: 'Unauthorized'
-			}, { status: 401 });
-		}
-
-		// Ensure we have the platform environment
-		if (!platform?.env) {
-			return json({ 
-				error: 'Service temporarily unavailable' 
-			}, { status: 500 });
-		}
-
-		// Fetch all subscribers with their details
-		const subscribers = await platform.env.DB
-			.prepare(`
-				SELECT id, email, type, created_at, active 
-				FROM subscribers 
-				ORDER BY created_at DESC
-			`)
-			.all();
-
-		return json({
-			subscribers: subscribers.results || []
-		});
-
-	} catch (error) {
-		console.error('Admin subscribers fetch error:', error);
-		return json({
-			error: 'Failed to fetch subscribers'
-		}, { status: 500 });
-	}
-}
-
-/**
- * Handle POST requests for admin actions (bulk operations, etc.)
+ * Handle POST requests for email subscriptions
  * @param {Object} params - SvelteKit request parameters
  * @param {Request} params.request - The request object
  * @param {Object} params.platform - Cloudflare platform object
@@ -69,70 +16,86 @@ export async function GET({ request, platform }) {
  */
 export async function POST({ request, platform }) {
 	try {
-		if (!isAuthorized(request)) {
-			return json({
-				error: 'Unauthorized'
-			}, { status: 401 });
-		}
-
+		// Ensure we have the platform environment
 		if (!platform?.env) {
 			return json({ 
-				error: 'Service temporarily unavailable' 
+				success: false, 
+				message: 'Service temporarily unavailable' 
 			}, { status: 500 });
 		}
 
-		/** @type {{action: string, data: any}} */
-		const { action, data } = await request.json();
+		/** @type {SubscribeRequest} */
+		const { email, type } = await request.json();
 
-		switch (action) {
-			case 'export_csv': {
-				// Export subscribers as CSV
-				const subscribers = await platform.env.DB
-					.prepare('SELECT email, type, created_at, active FROM subscribers ORDER BY created_at DESC')
-					.all();
-
-				const csvHeaders = 'Email,Type,Created At,Active\n';
-				const csvRows = subscribers.results.map(sub => 
-					`${sub.email},${sub.type},${sub.created_at},${sub.active}`
-				).join('\n');
-
-				return new Response(csvHeaders + csvRows, {
-					headers: {
-						'Content-Type': 'text/csv',
-						'Content-Disposition': 'attachment; filename="subscribers.csv"'
-					}
-				});
-			}
-
-			case 'bulk_unsubscribe': {
-				// Bulk unsubscribe emails
-				/** @type {string[]} */
-				const emails = data.emails;
-				
-				if (!Array.isArray(emails) || emails.length === 0) {
-					return json({ error: 'Invalid email list' }, { status: 400 });
-				}
-
-				const placeholders = emails.map(() => '?').join(',');
-				const result = await platform.env.DB
-					.prepare(`UPDATE subscribers SET active = false WHERE email IN (${placeholders})`)
-					.bind(...emails)
-					.run();
-
-				return json({
-					success: true,
-					message: `Unsubscribed ${result.changes} subscribers`
-				});
-			}
-
-			default:
-				return json({ error: 'Unknown action' }, { status: 400 });
+		// Basic validation
+		if (!email || !type) {
+			return json({
+				success: false,
+				message: 'Email and type are required'
+			}, { status: 400 });
 		}
 
-	} catch (error) {
-		console.error('Admin action error:', error);
+		if (!['newsletter', 'events'].includes(type)) {
+			return json({
+				success: false,
+				message: 'Invalid subscription type'
+			}, { status: 400 });
+		}
+
+		// Email validation
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return json({
+				success: false,
+				message: 'Invalid email format'
+			}, { status: 400 });
+		}
+
+		// Check if email already exists
+		const existingSubscriber = await platform.env.DB
+			.prepare('SELECT id, type FROM subscribers WHERE email = ? AND active = true')
+			.bind(email)
+			.first();
+
+		if (existingSubscriber) {
+			return json({
+				success: false,
+				message: 'Email already subscribed to this list'
+			}, { status: 409 });
+		}
+
+		// Insert new subscriber
+		const insertResult = await platform.env.DB
+			.prepare('INSERT INTO subscribers (email, type, created_at) VALUES (?, ?, ?)')
+			.bind(email, type, new Date().toISOString())
+			.run();
+
+		if (!insertResult.success) {
+			throw new Error('Failed to save subscription');
+		}
+
+		// Send welcome email
+		const emailContent = getWelcomeEmailContent(type);
+		const emailSent = await sendMailgunEmail({
+			to: email,
+			...emailContent
+		}, platform.env);
+
+		if (!emailSent) {
+			console.error('Failed to send welcome email to:', email);
+			// Don't fail the subscription if email fails
+		}
+
 		return json({
-			error: 'Failed to process admin action'
+			success: true,
+			message: `Successfully subscribed to ${type}!`
+		});
+
+	} catch (error) {
+		console.error('Subscription error:', error);
+		return json({
+			success: false,
+			message: 'Failed to process subscription'
 		}, { status: 500 });
 	}
 }
