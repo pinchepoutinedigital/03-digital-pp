@@ -23,7 +23,11 @@
                         "database_name": "subscribers-db",
                         "database_id": "215a6b19-a550-4d91-acd9-dcf756dc9438"
                 }
-        ]
+        ],
+	"triggers": {
+                "crons": [
+                        "0 9 * * 1"
+                ]
         /**
          * Note: Set MAILGUN_API_KEY as a secret using:
          * wrangler secret put MAILGUN_API_KEY
