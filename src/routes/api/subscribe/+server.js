@@ -53,7 +53,7 @@ export async function POST({ request, platform }) {
 
 		// Check if email already exists for this specific type
 		const existingSubscriber = await platform.env.DB
-			.prepare('SELECT id, type FROM subscribers WHERE email = ? AND type = ? AND active = true')
+			.prepare('SELECT id FROM subscribers WHERE email = ? AND type = ? AND active = true')
 			.bind(email, type)
 			.first();
 
