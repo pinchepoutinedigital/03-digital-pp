@@ -1,0 +1,23 @@
+.
+├── app.d.ts
+├── app.html
+├── app.js
+├── hooks.server.js
+├── lib
+│   ├── components
+│   │   └── SubscribeForm.svelte
+│   ├── email.js
+│   └── index.js
+├── routes
+│   ├── admin
+│   │   └── subscribers
+│   ├── api
+│   │   ├── resend-confirmation
+│   │   ├── subscribe
+│   │   └── unsubscribe
+│   ├── confirmation-success
+│   │   └── +page.svelte
+│   └── +page.svelte
+└── tree.txt
+
+11 directories, 10 files

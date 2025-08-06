@@ -43,7 +43,7 @@ export async function POST({ request, platform, url }) {
 			.bind(email, type)
 			.first();
 
-		if (existingSubscriber?.confirmed) {
+		/*if (existingSubscriber?.confirmed) {
 			return json({
 				success: false,
 				message: `Email already subscribed to ${type}`
