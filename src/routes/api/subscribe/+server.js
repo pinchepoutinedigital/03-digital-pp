@@ -42,22 +42,18 @@ export async function POST({ request, platform, url }) {
 		// Add this right before the database query
 console.log(`Checking for: email="${email}", type="${type}"`);
 
-// Check if email already exists for this specific type
-const existingSubscriber = await platform.env.DB
-    .prepare('SELECT id, confirmed, type FROM subscribers WHERE email = ? AND type = ?')
-    .bind(email, type)
-    .first();
-
-console.log('Query result:', existingSubscriber);
-console.log('Email exists for this type:', !!existingSubscriber);
-console.log('Is confirmed:', existingSubscriber?.confirmed);
 
 		// Check if email already exists and is confirmed
 		const existingSubscriber = await platform.env.DB
 			.prepare('SELECT id, confirmed FROM subscribers WHERE email = ? AND type = ?')
 			.bind(email, type)
 			.first();
+		
+console.log('Query result:', existingSubscriber);
+console.log('Email exists for this type:', !!existingSubscriber);
+console.log('Is confirmed:', existingSubscriber?.confirmed);
 
+		
 		if (existingSubscriber?.confirmed) {
 			return json({
 				success: false,
