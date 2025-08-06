@@ -1,0 +1,4 @@
+ALTER TABLE subscribers-db ADD COLUMN confirmation_token TEXT;
+ALTER TABLE subscribers-db ADD COLUMN token_expires_at TEXT;
+ALTER TABLE subscribers-db ADD COLUMN confirmed BOOLEAN DEFAULT false;
+ALTER TABLE subscribers-db ADD COLUMN confirmed_at TEXT;
