@@ -95,3 +95,38 @@ export function getWelcomeEmailContent(type) {
 			`
 	};
 }
+
+// Add this function to your existing src/lib/email.js file
+
+export function getConfirmationEmailContent(type, confirmationUrl) {
+	const typeText = type === 'newsletter' ? 'Newsletter' : 'Events';
+
+	return {
+		subject: `Confirm Your ${typeText} Subscription`,
+		html: `
+			<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+				<h2>Confirm Your Subscription</h2>
+				<p>Thank you for subscribing to our ${typeText.toLowerCase()}!</p>
+				<p>Please click the button below to confirm your subscription:</p>
+				<div style="text-align: center; margin: 30px 0;">
+					<a href="${confirmationUrl}"
+						 style="background-color: #007cba; color: white; padding: 15px 30px;
+										text-decoration: none; border-radius: 5px; display: inline-block;">
+						Confirm Subscription
+					</a>
+				</div>
+				<p>Or copy and paste this link into your browser:</p>
+				<p><a href="${confirmationUrl}">${confirmationUrl}</a></p>
+				<p><small>This link will expire in 24 hours.</small></p>
+			</div>
+		`,
+		text: `
+Thank you for subscribing to our ${typeText.toLowerCase()}!
+
+Please confirm your subscription by visiting this link:
+${confirmationUrl}
+
+This link will expire in 24 hours.
+		`
+	};
+}

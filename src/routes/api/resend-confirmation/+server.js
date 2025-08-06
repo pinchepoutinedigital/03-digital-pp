@@ -1,7 +1,6 @@
 // src/routes/api/resend-confirmation/+server.js
 import { json } from '@sveltejs/kit';
 import { sendEmail as sendMailgunEmail, getConfirmationEmailContent } from '$lib/email.js';
-import crypto from 'crypto';
 
 export async function POST({ request, platform, url }) {
 	try {
@@ -51,7 +50,10 @@ export async function POST({ request, platform, url }) {
 		}
 
 		// Generate new confirmation token
-		const confirmationToken = crypto.randomBytes(32).toString('hex');
+		// Generate confirmation token using Web Crypto API
+const tokenArray = new Uint8Array(32);
+crypto.getRandomValues(tokenArray);
+const confirmationToken = Array.from(tokenArray, byte => byte.toString(16).padStart(2, '0')).join('');
 		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
 		// Update the token
