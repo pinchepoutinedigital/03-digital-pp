@@ -1,34 +1,12 @@
-<script>
-	import SubscribeForm from '$lib/components/SubscribeForm.svelte';
-</script>
-
-<h1>¡Pinche Poutine! Digital</h1>
-
-<section>
-	<h2>Stay Updated</h2>
-	<p>Subscribe to our newsletter for the latest updates:</p>
-	<SubscribeForm type="newsletter" />
-</section>
-
-<section>
-	<h2>Event Updates</h2>
-	<p>Get notified about upcoming events:</p>
-	<SubscribeForm 
-		type="events" 
-		placeholder="Email for event updates"
-		buttonText="Get Event Updates"
-	/>
-</section>
-
 <svelte:head>
-    <title>Home - ¡Pinche Poutine! Digital</title>
+    <title>Home - YourSite</title>
     <meta name="description" content="Welcome to YourSite - Building amazing experiences with modern web technologies." />
 </svelte:head>
 
 <div class="hero">
     <div class="container">
         <div class="hero-content">
-            <h1>¡Pinche Poutine! Digital</h1>
+            <h1>Welcome to YourSite</h1>
             <p class="hero-subtitle">Building amazing experiences with modern web technologies</p>
             <div class="hero-actions">
                 <a href="/services" class="btn">Our Services</a>
