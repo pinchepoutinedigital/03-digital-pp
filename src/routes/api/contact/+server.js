@@ -1,18 +1,10 @@
 import { json } from '@sveltejs/kit';
-import Mailgun from 'mailgun.js';
 import { 
     MAILGUN_API_KEY, 
     MAILGUN_DOMAIN, 
     MAILGUN_FROM_EMAIL,
     CONTACT_EMAIL 
 } from '$env/static/private';
-
-// Initialize Mailgun
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({
-    username: 'api',
-    key: MAILGUN_API_KEY
-});
 
 export async function POST({ request }) {
     try {
@@ -80,10 +72,23 @@ Sent on: ${new Date().toLocaleString()}
             `,
             'h:Reply-To': email
         };
-        
-        // Send email via Mailgun
-        await mg.messages.create(MAILGUN_DOMAIN, emailData);
-        
+
+        // Send email via Mailgun REST API
+        const response = await fetch(`https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(emailData).toString()
+        });
+
+        // Check response
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Mailgun API error: ${errorText}`);
+        }
+
         console.log('Contact form email sent successfully:', {
             name,
             email,
