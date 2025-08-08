@@ -1,12 +1,14 @@
 import { json } from '@sveltejs/kit';
-import { 
-    MAILGUN_API_KEY, 
-    MAILGUN_DOMAIN, 
-    MAILGUN_FROM_EMAIL,
-    CONTACT_EMAIL 
-} from '$env/static/private';
 
-export async function POST({ request }) {
+export async function POST({ request, platform }) {
+    // Access environment variables from platform.env
+    const { 
+        MAILGUN_API_KEY, 
+        MAILGUN_DOMAIN, 
+        MAILGUN_FROM_EMAIL,
+        CONTACT_EMAIL 
+    } = platform.env;
+
     try {
         const { name, email, subject, message } = await request.json();
         

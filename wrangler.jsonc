@@ -15,8 +15,8 @@
 		"enabled": true
 	},
 	"vars": {
-                "MAILGUN_DOMAIN": "pinchepoutine.digital"
-		"CONTACT_EMAIL": "contact@pinchepoutine.digital",
+                "MAILGUN_DOMAIN": "pinchepoutine.digital",
+	       	"CONTACT_EMAIL": "contact@pinchepoutine.digital",
 	       	"MAILGUN_FROM_EMAIL": "noreply@pinchepoutine.digital"
         },
         "d1_databases": [
